@@ -8,8 +8,10 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # returns only the favorites of the currently authenticated user
-        return Favorite.objects.filter(user=self.request.user)
+        user = self.request.user
+        return Favorite.objects.filter(user=user).select_related(
+            'region', 'sub_region', 'category'
+        )
 
     def perform_create(self, serializer):
         # automatically assign the current user when creating a favorite
