@@ -8,6 +8,7 @@ class Migration(migrations.Migration):
     def seed_data(apps, schema_editor):
         """
         Create initial data for Region, SubRegion, and Category models.
+        Use roops to create regions and their corresponding sub-regions.
         """
         Region = apps.get_model('favorites', 'Region')
         SubRegion = apps.get_model('favorites', 'SubRegion')
