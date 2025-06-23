@@ -21,3 +21,17 @@ class FavoriteSerializer(serializers.ModelSerializer):
             'created_at'
         ]
         read_only_fields = ['id', 'created_at', 'region_name', 'sub_region_name', 'category_name']
+    
+    def validate(self, data):
+        """
+        Check if the selected sub_region belongs to the selected region.
+        """
+        region = data.get('region')
+        sub_region = data.get('sub_region')
+
+        if region and sub_region:
+            if sub_region.parent_region != region:
+                raise serializers.ValidationError(
+                    f"'{sub_region.name}' is not a sub-region of '{region.name}'."
+                )
+        return data
