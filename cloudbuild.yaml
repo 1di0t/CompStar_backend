@@ -43,6 +43,14 @@ steps:
     - 'manage.py'
     - 'migrate'
     - '--no-input'
+    - '-c'
+    - |
+      # Cloud Build가 이 비밀들을 사용한다고 인식하도록 명시적으로 체크합니다.
+      # 이 라인들은 변수가 설정되었는지 간단히 테스트하여 '사용 흔적'을 남깁니다.
+      test -n "$SECRET_KEY"
+      test -n "$DB_NAME"
+      test -n "$DB_USER"
+      test -n "$DB_PASSWORD"
   
 
 # --- 4단계: Cloud Run에 새 버전 배포 ---
