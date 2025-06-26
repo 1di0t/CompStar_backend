@@ -38,7 +38,8 @@ steps:
     -i "${_SERVICE_REGION}-docker.pkg.dev/$PROJECT_ID/${_SERVICE_NAME}/${_SERVICE_NAME}:$COMMIT_SHA" \
     -s "$PROJECT_ID:${_SERVICE_REGION}:${_DB_INSTANCE_NAME}" \
     -- \
-    bash -c "test -n \"$$SECRET_KEY\" && test -n \"$$DB_NAME\" && test -n \"$$DB_USER\" && test -n \"$$DB_PASSWORD\" && python manage.py migrate --no-input"
+    bash -c "test -n \"$$SECRET_KEY\" && test -n \"$$DB_NAME\" && test -n \"$$DB_USER\" && test -n \"$$DB_PASSWORD\" && echo 'All secrets checked, starting migration...' && python manage.py migrate --no-input"
+
 
 
 # --- 4단계: Cloud Run에 새 버전 배포 ---
