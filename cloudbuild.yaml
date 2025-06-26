@@ -42,7 +42,7 @@ steps:
         -- \
         python manage.py migrate --no-input
 
-# --- 4단계: Cloud Run 배포 (변경 없음) ---
+# --- 4단계: Cloud Run 배포 ---
 - name: 'gcr.io/google-cloud-sdk/gcloud'
   id: 'Deploy to Cloud Run'
   args:
@@ -56,7 +56,6 @@ steps:
     - '--add-cloudsql-instances=$PROJECT_ID:${_SERVICE_REGION}:${_DB_INSTANCE_NAME}'
     - '--set-secrets=SECRET_KEY=SECRET_KEY:latest,DB_NAME=DB_NAME:latest,DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest,DB_HOST=DB_HOST:latest'
 
-# --- 이하 변경 없음 ---
 images:
 - '${_SERVICE_REGION}-docker.pkg.dev/$PROJECT_ID/${_SERVICE_NAME}/${_SERVICE_NAME}:$COMMIT_SHA'
 substitutions:
