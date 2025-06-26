@@ -1,14 +1,15 @@
 # 이 파일은 Cloud Build가 수행할 작업의 순서와 설정을 정의합니다.
 # 각 단계(step)는 순차적으로 실행됩니다.
 availableSecrets:
-  - versionName: 'projects/585123519445/secrets/SECRET_KEY'
-    env: 'SECRET_KEY'
-  - versionName: 'projects/585123519445/secrets/DB_NAME'
-    env: 'DB_NAME'
-  - versionName: 'projects/585123519445/secrets/DB_USER'
-    env: 'DB_USER'
-  - versionName: 'projects/585123519445/secrets/DB_PASSWORD'
-    env: 'DB_PASSWORD'
+  secretManager:
+    - versionName: 'projects/585123519445/secrets/SECRET_KEY'
+      env: 'SECRET_KEY'
+    - versionName: 'projects/585123519445/secrets/DB_NAME'
+      env: 'DB_NAME'
+    - versionName: 'projects/585123519445/secrets/DB_USER'
+      env: 'DB_USER'
+    - versionName: 'projects/585123519445/secrets/DB_PASSWORD'
+      env: 'DB_PASSWORD'
 
 steps:
 # --- 1단계: Docker 이미지 빌드 ---
