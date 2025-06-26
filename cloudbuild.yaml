@@ -3,7 +3,6 @@
 
 steps:
 # --- 1단계: Docker 이미지 빌드 ---
-# 'gcr.io/cloud-builders/docker'는 GCP에서 제공하는 공식 Docker 빌드 도구입니다.
 - name: 'gcr.io/cloud-builders/docker'
   args:
     - 'build'
@@ -57,7 +56,7 @@ steps:
 images:
 - 'asia-northeast3-docker.pkg.dev/$PROJECT_ID/comp-star-repo/backend:$COMMIT_SHA'
 
-# 로깅 옵션: 빌드 로그를 별도의 버킷이 아닌 Cloud Logging에만 저장합니다.
+# Cloud Build의 로그를 Google Cloud Logging에만 기록하도록 설정합니다.
 options:
   logging: CLOUD_LOGGING_ONLY
 
