@@ -1,26 +1,24 @@
 # 이 파일은 Cloud Build가 수행할 작업의 순서와 설정을 정의합니다.
-# 각 단계(step)는 순차적으로 실행됩니다.
 availableSecrets:
   secretManager:
-    - versionName: 'projects/585123519445/secrets/SECRET_KEY'
+    - versionName: 'projects/585123519445/secrets/SECRET_KEY/versions/latest'
       env: 'SECRET_KEY'
-    - versionName: 'projects/585123519445/secrets/DB_NAME'
+    - versionName: 'projects/585123519445/secrets/DB_NAME/versions/latest'
       env: 'DB_NAME'
-    - versionName: 'projects/585123519445/secrets/DB_USER'
+    - versionName: 'projects/585123519445/secrets/DB_USER/versions/latest'
       env: 'DB_USER'
-    - versionName: 'projects/585123519445/secrets/DB_PASSWORD'
+    - versionName: 'projects/585123519445/secrets/DB_PASSWORD/versions/latest'
       env: 'DB_PASSWORD'
 
 steps:
 # --- 1단계: Docker 이미지 빌드 ---
 - name: 'gcr.io/cloud-builders/docker'
+  id: 'Build Docker Image'
   args:
     - 'build'
     - '-t'
     - '${_SERVICE_REGION}-docker.pkg.dev/$PROJECT_ID/${_SERVICE_NAME}/${_SERVICE_NAME}:$COMMIT_SHA'
     - '.'
-  id: 'Build Docker Image'
-
 
 # --- 2단계: Docker 이미지 푸시 ---
 - name: 'gcr.io/cloud-builders/docker'
@@ -29,29 +27,18 @@ steps:
     - 'push'
     - '${_SERVICE_REGION}-docker.pkg.dev/$PROJECT_ID/${_SERVICE_NAME}/${_SERVICE_NAME}:$COMMIT_SHA'
 
-
 # --- 3단계: 데이터베이스 마이그레이션 실행 ---
 - name: 'gcr.io/google-appengine/exec-wrapper'
   id: 'Run Database Migrations'
+  entrypoint: 'bash'
   args:
-    - '-i'
-    - '${_SERVICE_REGION}-docker.pkg.dev/$PROJECT_ID/${_SERVICE_NAME}/${_SERVICE_NAME}:$COMMIT_SHA'
-    - '-s' 
-    - '$PROJECT_ID:${_SERVICE_REGION}:${_DB_INSTANCE_NAME}'
-    - '--'
-    - 'python'
-    - 'manage.py'
-    - 'migrate'
-    - '--no-input'
-    - '-c'
-    - |
-      # Cloud Build가 이 비밀들을 사용한다고 인식하도록 명시적으로 체크합니다.
-      # 이 라인들은 변수가 설정되었는지 간단히 테스트하여 '사용 흔적'을 남깁니다.
-      test -n "$SECRET_KEY"
-      test -n "$DB_NAME"
-      test -n "$DB_USER"
-      test -n "$DB_PASSWORD"
-  
+  - '-c'
+  - |
+    /build/gcloud/google-cloud-sdk/platform/google_appengine/exec_wrapper \
+    -i "${_SERVICE_REGION}-docker.pkg.dev/$PROJECT_ID/${_SERVICE_NAME}/${_SERVICE_NAME}:$COMMIT_SHA" \
+    -s "$PROJECT_ID:${_SERVICE_REGION}:${_DB_INSTANCE_NAME}" \
+    -- \
+    bash -c "test -n \"$SECRET_KEY\" && test -n \"$DB_PASSWORD\" && python manage.py migrate --no-input"
 
 # --- 4단계: Cloud Run에 새 버전 배포 ---
 - name: 'gcr.io/google-cloud-sdk/gcloud'
@@ -59,28 +46,24 @@ steps:
   args:
     - 'run'
     - 'deploy'
-    - '${_SERVICE_NAME}' 
+    - '${_SERVICE_NAME}'
     - '--image=${_SERVICE_REGION}-docker.pkg.dev/$PROJECT_ID/${_SERVICE_NAME}/${_SERVICE_NAME}:$COMMIT_SHA'
-    - '--region=${_SERVICE_REGION}' 
+    - '--region=${_SERVICE_REGION}'
     - '--platform=managed'
     - '--quiet'
     - '--add-cloudsql-instances=$PROJECT_ID:${_SERVICE_REGION}:${_DB_INSTANCE_NAME}'
-    # secretEnv를 사용하여 Secret Manager에서 비밀을 가져옵니다.
-    - '--set-secrets=SECRET_KEY=SECRET_KEY:latest,DB_NAME=DB_NAME:latest,DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest,DB_HOST=DB_HOST:latest'
-
+    - '--set-secrets=SECRET_KEY=SECRET_KEY:latest,DB_NAME=DB_NAME:latest,DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest,DB_HOST=DB_HOST:latest' # DB_HOST는 Secret Manager에 있어야 함
 
 # 빌드가 완료된 후 Artifact Registry에 저장될 이미지 목록입니다.
-# (이 부분은 명시적으로 push 단계를 추가했으므로 필수는 아니지만, 명확성을 위해 유지하는 것이 좋습니다.)
 images:
-- 'asia-northeast3-docker.pkg.dev/$PROJECT_ID/comp-star-repo/backend:$COMMIT_SHA'
+- '${_SERVICE_REGION}-docker.pkg.dev/$PROJECT_ID/${_SERVICE_NAME}/${_SERVICE_NAME}:$COMMIT_SHA'
 
 # 이 빌드 파일에서 사용하는 환경 변수와 비밀을 정의합니다.
 substitutions:
-  _SERVICE_NAME: 'comp-star-repo' 
-  _SERVICE_REGION: 'asia-northeast3' 
+  _SERVICE_NAME: 'comp-star-repo'
+  _SERVICE_REGION: 'asia-northeast3'
   _DB_INSTANCE_NAME: 'my-database-instance'
 
 # Cloud Build의 로그를 Google Cloud Logging에만 기록하도록 설정합니다.
 options:
   logging: CLOUD_LOGGING_ONLY
-
