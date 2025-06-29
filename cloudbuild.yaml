@@ -49,7 +49,7 @@ steps:
         python manage.py migrate --no-input
 
 # --- 4단계: Cloud Run 배포 ---
-- name: 'gcr.io/google-cloud-sdk/gcloud'
+- name: 'gcr.io/cloud-builders/gcloud'
   id: 'Deploy to Cloud Run'
   args:
     - 'run'
