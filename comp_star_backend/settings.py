@@ -83,17 +83,25 @@ WSGI_APPLICATION = 'comp_star_backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+IS_GCP_ENVIRONMENT = os.environ.get('GAE_APPLICATION', None) is not None or os.environ.get('K_SERVICE', None) is not None
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
+        'USER': os.environ.comget('DB_USER'),
         'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': os.environ.get('DB_PORT'),
     }
 }
+
+DB_INSTANCE_CONNECTION_NAME = os.environ.get('DB_INSTANCE_CONNECTION_NAME')
+
+if DB_INSTANCE_CONNECTION_NAME:
+    DATABASES['default']['HOST'] = f'/cloudsql/{DB_INSTANCE_CONNECTION_NAME}'
+else:
+    # Fallback to local settings if not in GCP environment
+    DATABASES['default']['HOST'] = os.environ.get('DB_HOST', '127.0.0.1')
+    DATABASES['default']['PORT'] = os.environ.get('DB_PORT', '5432')
 
 # DRF & JWT Settings
 REST_FRAMEWORK = {

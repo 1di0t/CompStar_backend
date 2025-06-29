@@ -44,6 +44,7 @@ steps:
         -e DB_USER="$$DB_USER" \
         -e DB_PASSWORD="$$DB_PASSWORD" \
         -e DB_HOST="$$DB_HOST" \
+        -e DB_INSTANCE_CONNECTION_NAME="$PROJECT_ID:${_SERVICE_REGION}:${_DB_INSTANCE_NAME}" \
         -- \
         python manage.py migrate --no-input
 
@@ -60,6 +61,7 @@ steps:
     - '--quiet'
     - '--add-cloudsql-instances=$PROJECT_ID:${_SERVICE_REGION}:${_DB_INSTANCE_NAME}'
     - '--set-secrets=SECRET_KEY=SECRET_KEY:latest,DB_NAME=DB_NAME:latest,DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest,DB_HOST=DB_HOST:latest'
+    - '--set-env-vars=DB_INSTANCE_CONNECTION_NAME=$PROJECT_ID:${_SERVICE_REGION}:${_DB_INSTANCE_NAME}'
 
 images:
 - '${_SERVICE_REGION}-docker.pkg.dev/$PROJECT_ID/${_SERVICE_NAME}/${_SERVICE_NAME}:$COMMIT_SHA'
