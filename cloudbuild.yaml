@@ -39,6 +39,11 @@ steps:
       /buildstep/execute.sh \
         -i '${_SERVICE_REGION}-docker.pkg.dev/$PROJECT_ID/${_SERVICE_NAME}/${_SERVICE_NAME}:$COMMIT_SHA' \
         -s '$PROJECT_ID:${_SERVICE_REGION}:${_DB_INSTANCE_NAME}' \
+        -e SECRET_KEY="$$SECRET_KEY" \
+        -e DB_NAME="$$DB_NAME" \
+        -e DB_USER="$$DB_USER" \
+        -e DB_PASSWORD="$$DB_PASSWORD" \
+        -e DB_HOST="$$DB_HOST" \
         -- \
         python manage.py migrate --no-input
 
