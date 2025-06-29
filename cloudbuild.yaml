@@ -61,6 +61,6 @@ images:
 substitutions:
   _SERVICE_NAME: 'comp-star-repo'
   _SERVICE_REGION: 'asia-northeast3'
-  _DB_INSTANCE_NAME: 'my-database-instance'
+  _DB_INSTANCE_NAME: 'comp-star-db-instance'
 options:
   logging: CLOUD_LOGGING_ONLY
